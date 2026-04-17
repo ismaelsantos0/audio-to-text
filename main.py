@@ -65,7 +65,10 @@ def cleanup_temp_files():
     try:
         for file in TEMP_DIR.glob("*"):
             if time.time() - file.stat().st_mtime > 3600:  # Mais de 1h
-                file.unlink()
+                if file.is_file():
+                    file.unlink()
+                elif file.is_dir():
+                    shutil.rmtree(file)
                 logger.debug(f"Limpou: {file}")
     except Exception as e:
         logger.warning(f"Erro ao limpar temp: {e}")
@@ -209,7 +212,8 @@ async def handle_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     str(chunk_path),
                     language="pt",
                     verbose=False,
-                    fp16=False  # Desabilitar FP16 se der problema
+                    fp16=False,  # Desabilitar FP16 se der problema
+                    device="cpu" # Força CPU
                 )
                 chunk_time = time.time() - chunk_start
                 
@@ -285,7 +289,7 @@ async def handle_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception as e:
             logger.warning(f"⚠️ [ID:{request_id}] Erro ao limpar: {e}")
 
-async def main():
+def main():
     """Inicia a aplicação"""
     
     # Limpeza inicial
@@ -303,11 +307,11 @@ async def main():
     logger.info("=" * 60)
     
     # Polling
-    await app.run_polling()
+    app.run_polling()
 
 if __name__ == "__main__":
     try:
-        asyncio.run(main())
+        main()
     except KeyboardInterrupt:
         logger.info("⏹️ Bot encerrado pelo usuário")
     except Exception as e:
