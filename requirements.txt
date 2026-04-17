@@ -1,4 +1,5 @@
 python-telegram-bot==20.4
-openai-whisper==20231106
-pydub==0.25.1
-python-dotenv==1.0.0
+pydub
+torch
+setuptools
+git+https://github.com/openai/whisper.git
